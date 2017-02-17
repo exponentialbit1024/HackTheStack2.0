@@ -8,5 +8,5 @@ var app = angular.module('hackTStack', ['ngMaterial'])
   });
 
 app.controller("challengCtrl", function($scope){
-
+  
 });

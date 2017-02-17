@@ -12,12 +12,46 @@
 	<script src="../static/node_modules/angular-animate/angular-animate.js"></script>
 	<script src="../static/node_modules/angular-material/angular-material.min.js"></script>
 	<script src="../static/node_modules/angular-messages/angular-messages.min.js"></script>
+  <link rel="stylesheet" href="../static/css/index.css">
   <script src="../static/js/index.js"></script>
   <title> IEEE Computer Society HackTheStack2.0 </title>
 </head>
 <body>
+  {%raw%}
   <div ng-app="hackTStack" ng-cloak="" ng-controller="challengCtrl">
-     
+
+    <md-content class="headerNav">
+     <md-toolbar class="md-pimary md-hue-2" style="min-height:40px;height:40px;">
+       <div class="md-toolbar-tools">
+         <h2 class="headerLogo">
+           <a href="/"><span class="md-headline">HackTheStack2.0</span></a>
+         </h2>
+       </div>
+     </md-toolbar>
+   </md-content>
+
+   <div layout="row" layout-align="center center">
+      <h1 class="md-display-1"> Welcome to IEEE Computer Society HackTheStack2.0! </h1>
+    </div>
+
+  <md-content class="md-padding" layout-xs="column" layout="row" layout-align="center">
+    <div flex-gt-xs="50" layout="column">
+     <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
+       <md-card-content>
+         <h1 class="md-subhead"> Please enter your Purdue userID to start keeping track of your score and get access to the challenges. </h1>
+         <md-input-container class="md-block" flex-gt-sm>
+            <label>Purdue UserID</label>
+            <input ng-model="user.firstName">
+          </md-input-container>
+          <md-card-actions layout="row" layout-align="end center">
+            <md-button class="md-raised md-primary">Go</md-button>
+          </md-card-actions>
+       </md-card-content>
+     </md-card>
+   </div>
+   </md-content>
+
   </div>
+  {%endraw%}
 </body>
 </html>
