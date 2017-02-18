@@ -114,17 +114,21 @@
            <h1 class="md-subhead"> SQL Injection attacks make use of the fact that the designer has not performed enough or any checks on the user inputs into crucial fields like Email and Password, before querying an SQL database for user authentication. Your task is to find that loophole at http://138.197.11.53 and login as admin@csociety.org.</h1>
            <h1 class="md-subhead"> To try a correct login, use email : bobby_t@csociety.org and password : password5 </h1>
            <h1 class="md-subhead"> Once you are in, you will receive a password to post on this tab and proceed to get points. </h1>
+           <h1 class="md-subhead"> More Challenges will be posted later. </h1>
          </md-card-content>
        </md-card>
-       <div layout="row">
-         <div flex=70>
-          <md-input-container class="md-block" flex-gt-sm>
-             <label>Password </label>
-               <input ng-model="sqlpass">
-           </md-input-container>
-         </div>
-         <div flex=30>
-           <md-button ng-disabled="sqlflag" class="md-primary" ng-click="sqlInj1passSubmit()">Submit</md-button>
+
+       <div class="md-block" layout="row" layout-align="center center">
+         <div layout="row">
+           <div flex=70>
+            <md-input-container class="md-block" flex-gt-sm>
+               <label>Password </label>
+                 <input ng-model="sqlpass">
+             </md-input-container>
+           </div>
+           <div flex=30>
+             <md-button ng-disabled="sqlflag" class="md-primary" ng-click="sqlInj1passSubmit()">Submit</md-button>
+           </div>
          </div>
        </div>
      </md-tab>

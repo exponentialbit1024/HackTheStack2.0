@@ -5,6 +5,7 @@ import json
 import os
 import re
 import collections
+import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -103,7 +104,6 @@ def checkBOAPass():
 
 def saveDBase(comparedOutput):
     try:
-        import datetime
         currUserScoreFpath = baseUserDir + session['logID'] + "/completedBOA"
         timeStamps = baseUserDir + session['logID'] + "/timeStampsBOA"
         f = open(currUserScoreFpath, "r")
@@ -171,3 +171,38 @@ def checkDBaseBOA():
 
     print completedChalbool
     return jsonify({'allChallenges':completedChalbool})
+
+@app.route('/checkSQL', methods = ['POST'])
+def checkSQL():
+    if not session['logged_in'] or session['logID'] == None:
+        return jsonify({'result':False, 'error' : 'Nice Try'})
+    if request.method == 'POST':
+        sqlPassUserInputob = json.loads(request.data.decode())
+        sqlPassUserInput = sqlPassUserInputob['sqlPass']
+        if sqlPassUserInput == 'littlebobbytables327':
+            saveSQLDB()
+            return jsonify({'sqlCompleted' : True})
+        else:
+            return jsonify({'sqlCompleted' : False})
+    return jsonify({'result':False, 'error': "Crash and Burn, or you tried something you were not supposed to"})
+
+def saveSQLDB():
+    currUserScoreFpathSQL = baseUserDir + session['logID'] + "/completedSQL"
+    currUserScoreFpathSQLTime = baseUserDir + session['logID'] + "/completedSQLTime"
+    f = open(currUserScoreFpathSQL, "a+")
+    f.write("sqlInj")
+    f.close()
+    q = open(currUserScoreFpathSQLTime, "a+")
+    q.write(str(datetime.datetime.now().time()))
+    q.close()
+
+@app.route('/checkSQLDBase', methods = ['GET'])
+def checkSQLDbase():
+    currUserScoreFpathSQL = baseUserDir + session['logID'] + "/completedSQL"
+    f = open(currUserScoreFpathSQL, "r")
+    completedFlag = f.read()
+    print completedFlag
+    f.close()
+    if completedFlag != "" or completedFlag != None:
+        return jsonify({'sqlCompleted' : True})
+    return jsonify({'sqlCompleted' : False})

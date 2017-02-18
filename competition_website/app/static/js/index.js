@@ -49,6 +49,7 @@ app.controller("challengeCtrl", function($scope, $http, $window){
   $scope.boa = {};
   $scope.buttonToggle = [];
   checkDBaseBOA();
+  checkDBaseSQL();
   function checkDBaseBOA(){
     $http.get('/getBOADBase')
     .then(function(response){
@@ -119,8 +120,43 @@ app.controller("challengeCtrl", function($scope, $http, $window){
       });
   };
 
+  function checkDBaseSQL(){
+    $http.get('/checkSQLDBase')
+    .then(function(response){
+      $scope.sqlflag = response.data.sqlCompleted;
+      console.log($scope.sqlflag);
+    });
+  }
+
   $scope.sqlInj1passSubmit = function(){
-    console.log($scope.sqlpass);
+    var sqlPass = {
+      'sqlPass' : $scope.sqlpass
+    };
+    $http({
+      method  : 'POST',
+      url     : '/checkSQL',
+      data    : sqlPass,
+      headers : {'Content-Type': 'application/json'}
+     })
+     .success(function(data) {
+        if (data.errors) {
+          // Showing errors.
+          $scope.errorName = data.errors.name;
+          $scope.errorUserName = data.errors.username;
+          $scope.errorEmail = data.errors.email;
+        } else {
+          $scope.message = data.message;
+          if(data.sqlCompleted){
+            //check for database for button toggle
+            // $scope.sqlflag = data.sqlCompleted;
+            checkDBaseBOA();
+            checkDBaseSQL();
+          }else{
+            alert("Crash and burn, call a moderator");
+          }
+        }
+      });
+
   }
 
 })
