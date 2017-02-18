@@ -116,7 +116,17 @@
            <h1 class="md-subhead"> Once you are in, you will receive a password to post on this tab and proceed to get points. </h1>
          </md-card-content>
        </md-card>
-
+       <div layout="row">
+         <div flex=70>
+          <md-input-container class="md-block" flex-gt-sm>
+             <label>Password </label>
+               <input ng-model="sqlpass">
+           </md-input-container>
+         </div>
+         <div flex=30>
+           <md-button ng-disabled="sqlflag" class="md-primary" ng-click="sqlInj1passSubmit()">Submit</md-button>
+         </div>
+       </div>
      </md-tab>
      <md-tab label="Forensics">
 

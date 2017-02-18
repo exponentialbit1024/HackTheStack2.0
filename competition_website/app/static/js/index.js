@@ -119,4 +119,8 @@ app.controller("challengeCtrl", function($scope, $http, $window){
       });
   };
 
+  $scope.sqlInj1passSubmit = function(){
+    console.log($scope.sqlpass);
+  }
+
 })
