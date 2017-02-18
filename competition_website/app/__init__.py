@@ -62,6 +62,10 @@ def createNewUser(loginID):
     try:
         newDirPath = baseUserDir + loginID
         os.makedirs(newDirPath)
+        completedFile = baseUserDir + "/completedBOA"
+        timeStampsFile = baseUserDir + "/timeStampsBOA"
+        open(completedFile, "a")
+        open(timeStampsFile, "a")
         return True
     except:
         return False
@@ -100,7 +104,7 @@ def checkBOAPass():
 def saveDBase(comparedOutput):
     try:
         import datetime
-        currUserScoreFpath = baseUserDir + session['logID'] + "/completed"
+        currUserScoreFpath = baseUserDir + session['logID'] + "/completedBOA"
         timeStamps = baseUserDir + session['logID'] + "/timeStampsBOA"
         f = open(currUserScoreFpath, "r")
         currCompleted = f.read().split("\n")
