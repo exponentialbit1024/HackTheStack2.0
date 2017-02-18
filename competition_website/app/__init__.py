@@ -93,6 +93,7 @@ def checkBOAPass():
         allPassword = getPasswords()
         if allPassword == None:
             return jsonify({'result': 'Crash and Burn, call moderator, there might be an issue with retriving comparator passwords.'})
+        print "hello" + orderedInput
         comparedOutput = comparePass(orderedInput, allPassword)
         saveSuc = saveDBase(comparedOutput)
         if not saveSuc:
@@ -127,6 +128,7 @@ def comparePass(orderedInput, allPassword):
     compareArray = []
     for i in range(len(orderedInput)):
         compareArray.append(orderedInput[i] == allPassword[i])
+    print compareArray
     return compareArray
 
 def orderUserInputBOAPass(userInputBOADict):
