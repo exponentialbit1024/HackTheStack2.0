@@ -89,8 +89,35 @@ def checkBOAPass():
         if allPassword == None:
             return jsonify({'result': 'Crash and Burn, call moderator, there might be an issue with retriving comparator passwords.'})
         comparedOutput = comparePass(orderedInput, allPassword)
+        saveSuc = saveDBase(comparedOutput)
+        if not saveSuc:
+            print "BOA output"
+            print comparedOutput
+            return jsonify({'result':False, 'error' : "Crash and burn, call moderator"})
         return jsonify({'result':True, 'buttonToggle' : comparedOutput})
     return jsonify({'result':False, 'error' : 'Crash and Burn, call moderator'})
+
+def saveDBase(comparedOutput):
+    try:
+        import datetime
+        currUserScoreFpath = baseUserDir + session['logID'] + "/completed"
+        timeStamps = baseUserDir + session['logID'] + "/timeStampsBOA"
+        f = open(currUserScoreFpath, "r")
+        currCompleted = f.read().split("\n")
+        f.close()
+        q = open(currUserScoreFpath, "a+")
+        y = open(timeStamps, "w")
+        newWriteStr = ""
+        for i in range(len(comparedOutput)):
+            if comparedOutput[i]:
+                newWriteStr = "boa" + str(i + 1)
+                if newWriteStr not in currCompleted:
+                    q.write(newWriteStr+"\n")
+                    y.write(str(datetime.datetime.now().time()))
+        q.close()
+        return True
+    except:
+        return False
 
 def comparePass(orderedInput, allPassword):
     compareArray = []
@@ -121,6 +148,22 @@ def getPasswords():
 def checkDBaseBOA():
     if not session['logged_in'] or session['logID'] == None:
         return jsonify({'result':False, 'error' : 'Nice Try'})
-    currUserScoreFpath = baseUserDir + session['logID'] + "/completed"
-    
-    return False
+    currUserScoreFpath = baseUserDir + session['logID'] + "/completedBOA"
+    f = open(currUserScoreFpath, "r")
+    completedChals = f.read().split("\n")
+    f.close()
+    completedChalbool = [False,False,False,False,False]
+
+    if 'boa1' in completedChals:
+        completedChalbool[0] = True
+    if 'boa2' in completedChals:
+        completedChalbool[1] = True
+    if 'boa3' in completedChals:
+        completedChalbool[2] = True
+    if 'boa4' in completedChals:
+        completedChalbool[3] = True
+    if 'boa5' in completedChals:
+        completedChalbool[4] = True
+
+    print completedChalbool
+    return jsonify({'allChallenges':completedChalbool})

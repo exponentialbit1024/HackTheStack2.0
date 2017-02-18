@@ -48,8 +48,21 @@ app.controller("challengeCtrl", function($scope, $http, $window){
 
   $scope.boa = {};
   $scope.buttonToggle = [];
+  checkDBaseBOA();
   function checkDBaseBOA(){
-    
+    $http.get('/getBOADBase')
+    .then(function(response){
+      console.log(response);
+      $scope.buttonToggle = response.data.allChallenges;
+      while($scope.buttonToggle.length != 5){
+        $scope.buttonToggle.push(false);
+      }
+      $scope.boa1submitflag =  $scope.buttonToggle[0];
+      $scope.boa2submitflag =  $scope.buttonToggle[1];
+      $scope.boa3submitflag =  $scope.buttonToggle[2];
+      $scope.boa4submitflag =  $scope.buttonToggle[3];
+      $scope.boa5submitflag =  $scope.buttonToggle[4];
+    });
   }
 
   $scope.boa1passSubmit = function(){
@@ -98,6 +111,7 @@ app.controller("challengeCtrl", function($scope, $http, $window){
           $scope.message = data.message;
           if(data.result){
             //check for database for button toggle
+            checkDBaseBOA();
           }else{
             alert("Crash and burn, call a moderator");
           }
