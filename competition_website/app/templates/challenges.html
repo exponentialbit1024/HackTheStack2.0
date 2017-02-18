@@ -141,13 +141,15 @@
          </md-card-content>
        </md-card>
 
-       
+
      </md-tab>
      <md-tab label="Forensics">
+       <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
          <md-card-content>
            <h1 class="md-headline"> Forensics Challenges </h1>
-           <h1 class="md-headline"> Each forensics challenge is located in a self contained directory. While these are not typical "attacks" or "exploits", there is some data hidden (either cryptographically or steganographically) in the files within that directory. Your task is to retrieve that data and extract a password from it. </h1>
+           <h1 class="md-subhead"> Each forensics challenge is located in a self contained directory. While these are not typical "attacks" or "exploits", there is some data hidden (either cryptographically or steganographically) in the files within that directory. Your task is to retrieve that data and extract a password from it. </h1>
          </md-card-content>
+       </md-card>
 
      </md-tab>
    </md-tabs>
