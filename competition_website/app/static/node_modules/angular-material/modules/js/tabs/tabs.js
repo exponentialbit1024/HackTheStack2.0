@@ -2,7 +2,7 @@
  * Angular Material Design
  * https://github.com/angular/material
  * @license MIT
- * v1.1.3
+ * v1.1.1
  */
 (function( window, angular, undefined ){
 "use strict";
@@ -98,12 +98,12 @@ function MdTab () {
       var label = firstChild(element, 'md-tab-label'),
           body  = firstChild(element, 'md-tab-body');
 
-      if (label.length === 0) {
+      if (label.length == 0) {
         label = angular.element('<md-tab-label></md-tab-label>');
         if (attr.label) label.text(attr.label);
         else label.append(element.contents());
 
-        if (body.length === 0) {
+        if (body.length == 0) {
           var contents = element.contents().detach();
           body         = angular.element('<md-tab-body></md-tab-body>');
           body.append(contents);
@@ -188,7 +188,7 @@ function MdTabLabel () {
 
 
 
-MdTabScroll['$inject'] = ["$parse"];angular.module('material.components.tabs')
+MdTabScroll.$inject = ["$parse"];angular.module('material.components.tabs')
     .directive('mdTabScroll', MdTabScroll);
 
 function MdTabScroll ($parse) {
@@ -202,19 +202,19 @@ function MdTabScroll ($parse) {
         });
       };
     }
-  };
+  }
 }
 
 
-MdTabsController['$inject'] = ["$scope", "$element", "$window", "$mdConstant", "$mdTabInkRipple", "$mdUtil", "$animateCss", "$attrs", "$compile", "$mdTheming", "$mdInteraction"];angular
+MdTabsController.$inject = ["$scope", "$element", "$window", "$mdConstant", "$mdTabInkRipple", "$mdUtil", "$animateCss", "$attrs", "$compile", "$mdTheming"];angular
     .module('material.components.tabs')
     .controller('MdTabsController', MdTabsController);
 
 /**
  * ngInject
  */
-function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipple, $mdUtil,
-                           $animateCss, $attrs, $compile, $mdTheming, $mdInteraction) {
+function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipple,
+                           $mdUtil, $animateCss, $attrs, $compile, $mdTheming) {
   // define private properties
   var ctrl      = this,
       locked    = false,
@@ -223,9 +223,37 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
       destroyed = false,
       loaded    = false;
 
+  // define one-way bindings
+  defineOneWayBinding('stretchTabs', handleStretchTabs);
 
-  // Define public methods
-  ctrl.$onInit            = $onInit;
+  // define public properties with change handlers
+  defineProperty('focusIndex', handleFocusIndexChange, ctrl.selectedIndex || 0);
+  defineProperty('offsetLeft', handleOffsetChange, 0);
+  defineProperty('hasContent', handleHasContent, false);
+  defineProperty('maxTabWidth', handleMaxTabWidth, getMaxTabWidth());
+  defineProperty('shouldPaginate', handleShouldPaginate, false);
+
+  // define boolean attributes
+  defineBooleanAttribute('noInkBar', handleInkBar);
+  defineBooleanAttribute('dynamicHeight', handleDynamicHeight);
+  defineBooleanAttribute('noPagination');
+  defineBooleanAttribute('swipeContent');
+  defineBooleanAttribute('noDisconnect');
+  defineBooleanAttribute('autoselect');
+  defineBooleanAttribute('noSelectClick');
+  defineBooleanAttribute('centerTabs', handleCenterTabs, false);
+  defineBooleanAttribute('enableDisconnect');
+
+  // define public properties
+  ctrl.scope             = $scope;
+  ctrl.parent            = $scope.$parent;
+  ctrl.tabs              = [];
+  ctrl.lastSelectedIndex = null;
+  ctrl.hasFocus          = false;
+  ctrl.lastClick         = true;
+  ctrl.shouldCenterTabs  = shouldCenterTabs();
+
+  // define public methods
   ctrl.updatePagination   = $mdUtil.debounce(updatePagination, 100);
   ctrl.redirectFocus      = redirectFocus;
   ctrl.attachRipple       = attachRipple;
@@ -243,58 +271,13 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
   ctrl.getTabElementIndex = getTabElementIndex;
   ctrl.updateInkBarStyles = $mdUtil.debounce(updateInkBarStyles, 100);
   ctrl.updateTabOrder     = $mdUtil.debounce(updateTabOrder, 100);
-  ctrl.getFocusedTabId    = getFocusedTabId;
 
-  // For Angular 1.4 and older, where there are no lifecycle hooks but bindings are pre-assigned,
-  // manually call the $onInit hook.
-  if (angular.version.major === 1 && angular.version.minor <= 4) {
-    this.$onInit();
-  }
+  init();
 
   /**
-   * Angular Lifecycle hook for newer Angular versions.
-   * Bindings are not guaranteed to have been assigned in the controller, but they are in the $onInit hook.
+   * Perform initialization for the controller, setup events and watcher(s)
    */
-  function $onInit() {
-    // Define one-way bindings
-    defineOneWayBinding('stretchTabs', handleStretchTabs);
-
-    // Define public properties with change handlers
-    defineProperty('focusIndex', handleFocusIndexChange, ctrl.selectedIndex || 0);
-    defineProperty('offsetLeft', handleOffsetChange, 0);
-    defineProperty('hasContent', handleHasContent, false);
-    defineProperty('maxTabWidth', handleMaxTabWidth, getMaxTabWidth());
-    defineProperty('shouldPaginate', handleShouldPaginate, false);
-
-    // Define boolean attributes
-    defineBooleanAttribute('noInkBar', handleInkBar);
-    defineBooleanAttribute('dynamicHeight', handleDynamicHeight);
-    defineBooleanAttribute('noPagination');
-    defineBooleanAttribute('swipeContent');
-    defineBooleanAttribute('noDisconnect');
-    defineBooleanAttribute('autoselect');
-    defineBooleanAttribute('noSelectClick');
-    defineBooleanAttribute('centerTabs', handleCenterTabs, false);
-    defineBooleanAttribute('enableDisconnect');
-
-    // Define public properties
-    ctrl.scope             = $scope;
-    ctrl.parent            = $scope.$parent;
-    ctrl.tabs              = [];
-    ctrl.lastSelectedIndex = null;
-    ctrl.hasFocus          = false;
-    ctrl.styleTabItemFocus = false;
-    ctrl.shouldCenterTabs  = shouldCenterTabs();
-    ctrl.tabContentPrefix  = 'tab-content-';
-
-    // Setup the tabs controller after all bindings are available.
-    setupTabsController();
-  }
-
-  /**
-   * Perform setup for the controller, setup events and watcher(s)
-   */
-  function setupTabsController () {
+  function init () {
     ctrl.selectedIndex = ctrl.selectedIndex || 0;
     compileTemplate();
     configureWatchers();
@@ -516,6 +499,7 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
         if (!locked) select(ctrl.focusIndex);
         break;
     }
+    ctrl.lastClick = false;
   }
 
   /**
@@ -526,6 +510,7 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
    */
   function select (index, canSkipClick) {
     if (!locked) ctrl.focusIndex = ctrl.selectedIndex = index;
+    ctrl.lastClick = true;
     // skip the click event if noSelectClick is enabled
     if (canSkipClick && ctrl.noSelectClick) return;
     // nextTick is required to prevent errors in user-defined click events
@@ -556,13 +541,13 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
       tab = elements.tabs[ i ];
       if (tab.offsetLeft + tab.offsetWidth > totalWidth) break;
     }
-
+    
     if (viewportWidth > tab.offsetWidth) {
       //Canvas width *greater* than tab width: usual positioning
       ctrl.offsetLeft = fixOffset(tab.offsetLeft);
     } else {
       /**
-       * Canvas width *smaller* than tab width: positioning at the *end* of current tab to let
+       * Canvas width *smaller* than tab width: positioning at the *end* of current tab to let 
        * pagination "for loop" to proceed correctly on next tab when nextPage() is called again
        */
       ctrl.offsetLeft = fixOffset(tab.offsetLeft + (tab.offsetWidth - viewportWidth + 1));
@@ -579,16 +564,16 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
       tab = elements.tabs[ i ];
       if (tab.offsetLeft + tab.offsetWidth >= ctrl.offsetLeft) break;
     }
-
+    
     if (elements.canvas.clientWidth > tab.offsetWidth) {
       //Canvas width *greater* than tab width: usual positioning
       ctrl.offsetLeft = fixOffset(tab.offsetLeft + tab.offsetWidth - elements.canvas.clientWidth);
     } else {
       /**
-       * Canvas width *smaller* than tab width: positioning at the *beginning* of current tab to let
+       * Canvas width *smaller* than tab width: positioning at the *beginning* of current tab to let 
        * pagination "for loop" to break correctly on previous tab when previousPage() is called again
        */
-      ctrl.offsetLeft = fixOffset(tab.offsetLeft);
+      ctrl.offsetLeft = fixOffset(tab.offsetLeft);  
     }
   }
 
@@ -652,11 +637,10 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
           isRight:      function () { return this.getIndex() > ctrl.selectedIndex; },
           shouldRender: function () { return !ctrl.noDisconnect || this.isActive(); },
           hasFocus:     function () {
-            return ctrl.styleTabItemFocus
+            return !ctrl.lastClick
                 && ctrl.hasFocus && this.getIndex() === ctrl.focusIndex;
           },
-          id:           $mdUtil.nextUid(),
-          hasContent: !!(tabData.template && tabData.template.trim())
+          id:           $mdUtil.nextUid()
         },
         tab       = angular.extend(proto, tabData);
     if (angular.isDefined(index)) {
@@ -664,13 +648,10 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
     } else {
       ctrl.tabs.push(tab);
     }
-
     processQueue();
     updateHasContent();
     $mdUtil.nextTick(function () {
       updatePagination();
-      setAriaControls(tab);
-
       // if autoselect is enabled, select the newly added tab
       if (hasLoaded && ctrl.autoselect) $mdUtil.nextTick(function () {
         $mdUtil.nextTick(function () { select(ctrl.tabs.indexOf(tab)); });
@@ -719,17 +700,6 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
     var lastTab = elements.tabs[ elements.tabs.length - 1 ];
     return lastTab && lastTab.offsetLeft + lastTab.offsetWidth > elements.canvas.clientWidth +
         ctrl.offsetLeft;
-  }
-
-  /**
-   * Returns currently focused tab item's element ID
-   */
-  function getFocusedTabId() {
-    var focusedTab = ctrl.tabs[ctrl.focusIndex];
-    if (!focusedTab || !focusedTab.id) {
-      return null;
-    }
-    return 'tab-item-' + focusedTab.id;
   }
 
   /**
@@ -814,8 +784,21 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
    * Updates whether or not pagination should be displayed.
    */
   function updatePagination () {
+    updatePagingWidth();
     ctrl.maxTabWidth = getMaxTabWidth();
     ctrl.shouldPaginate = shouldPaginate();
+  }
+
+  /**
+   * Sets or clears fixed width for md-pagination-wrapper depending on if tabs should stretch.
+   */
+  function updatePagingWidth() {
+    var elements = getElements();
+    if (shouldStretchTabs()) {
+      angular.element(elements.paging).css('width', '');
+    } else {
+      angular.element(elements.paging).css('width', calcPagingWidth() + 'px');
+    }
   }
 
   /**
@@ -879,7 +862,6 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
    * issues when attempting to focus an item that is out of view.
    */
   function redirectFocus () {
-    ctrl.styleTabItemFocus = ($mdInteraction.getLastInteractionType() === 'keyboard');
     getElements().dummies[ ctrl.focusIndex ].focus();
   }
 
@@ -889,7 +871,7 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
   function adjustOffset (index) {
     var elements = getElements();
 
-    if (!angular.isNumber(index)) index = ctrl.focusIndex;
+    if (index == null) index = ctrl.focusIndex;
     if (!elements.tabs[ index ]) return;
     if (ctrl.shouldCenterTabs) return;
     var tab         = elements.tabs[ index ],
@@ -913,14 +895,9 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
    */
   function updateHasContent () {
     var hasContent  = false;
-
-    for (var i = 0; i < ctrl.tabs.length; i++) {
-      if (ctrl.tabs[i].hasContent) {
-        hasContent = true;
-        break;
-      }
-    }
-
+    angular.forEach(ctrl.tabs, function (tab) {
+      if (tab.template) hasContent = true;
+    });
     ctrl.hasContent = hasContent;
   }
 
@@ -1070,18 +1047,6 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
     var options = { colorElement: angular.element(elements.inkBar) };
     $mdTabInkRipple.attach(scope, element, options);
   }
-
-  /**
-   * Sets the `aria-controls` attribute to the elements that
-   * correspond to the passed-in tab.
-   * @param tab
-   */
-  function setAriaControls (tab) {
-    if (tab.hasContent) {
-      var nodes = $element[0].querySelectorAll('[md-tab-id="' + tab.id + '"]');
-      angular.element(nodes).attr('aria-controls', ctrl.tabContentPrefix + tab.id);
-    }
-  }
 }
 
 /**
@@ -1182,7 +1147,7 @@ function MdTabsController ($scope, $element, $window, $mdConstant, $mdTabInkRipp
  * </hljs>
  *
  */
-MdTabs['$inject'] = ["$$mdSvgRegistry"];
+MdTabs.$inject = ["$$mdSvgRegistry"];
 angular
     .module('material.components.tabs')
     .directive('mdTabs', MdTabs);
@@ -1193,7 +1158,7 @@ function MdTabs ($$mdSvgRegistry) {
       selectedIndex: '=?mdSelected'
     },
     template:         function (element, attr) {
-      attr.$mdTabsTemplate = element.html();
+      attr[ "$mdTabsTemplate" ] = element.html();
       return '' +
         '<md-tabs-wrapper> ' +
           '<md-tab-data></md-tab-data> ' +
@@ -1219,7 +1184,7 @@ function MdTabs ($$mdSvgRegistry) {
           '</md-next-button> ' +
           '<md-tabs-canvas ' +
               'tabindex="{{ $mdTabsCtrl.hasFocus ? -1 : 0 }}" ' +
-              'aria-activedescendant="{{$mdTabsCtrl.getFocusedTabId()}}" ' +
+              'aria-activedescendant="tab-item-{{$mdTabsCtrl.tabs[$mdTabsCtrl.focusIndex].id}}" ' +
               'ng-focus="$mdTabsCtrl.redirectFocus()" ' +
               'ng-class="{ ' +
                   '\'md-paginated\': $mdTabsCtrl.shouldPaginate, ' +
@@ -1235,7 +1200,7 @@ function MdTabs ($$mdSvgRegistry) {
                   'class="md-tab" ' +
                   'ng-repeat="tab in $mdTabsCtrl.tabs" ' +
                   'role="tab" ' +
-                  'md-tab-id="{{::tab.id}}"' +
+                  'aria-controls="tab-content-{{::tab.id}}" ' +
                   'aria-selected="{{tab.isActive()}}" ' +
                   'aria-disabled="{{tab.scope.disabled || \'false\'}}" ' +
                   'ng-click="$mdTabsCtrl.select(tab.getIndex())" ' +
@@ -1256,7 +1221,8 @@ function MdTabs ($$mdSvgRegistry) {
                   'class="md-tab" ' +
                   'tabindex="-1" ' +
                   'id="tab-item-{{::tab.id}}" ' +
-                  'md-tab-id="{{::tab.id}}"' +
+                  'role="tab" ' +
+                  'aria-controls="tab-content-{{::tab.id}}" ' +
                   'aria-selected="{{tab.isActive()}}" ' +
                   'aria-disabled="{{tab.scope.disabled || \'false\'}}" ' +
                   'ng-focus="$mdTabsCtrl.hasFocus = true" ' +
@@ -1269,13 +1235,13 @@ function MdTabs ($$mdSvgRegistry) {
         '</md-tabs-wrapper> ' +
         '<md-tabs-content-wrapper ng-show="$mdTabsCtrl.hasContent && $mdTabsCtrl.selectedIndex >= 0" class="_md"> ' +
           '<md-tab-content ' +
-              'id="{{:: $mdTabsCtrl.tabContentPrefix + tab.id}}" ' +
+              'id="tab-content-{{::tab.id}}" ' +
               'class="_md" ' +
               'role="tabpanel" ' +
               'aria-labelledby="tab-item-{{::tab.id}}" ' +
               'md-swipe-left="$mdTabsCtrl.swipeContent && $mdTabsCtrl.incrementIndex(1)" ' +
               'md-swipe-right="$mdTabsCtrl.swipeContent && $mdTabsCtrl.incrementIndex(-1)" ' +
-              'ng-if="tab.hasContent" ' +
+              'ng-if="$mdTabsCtrl.hasContent" ' +
               'ng-repeat="(index, tab) in $mdTabsCtrl.tabs" ' +
               'ng-class="{ ' +
                 '\'md-no-transition\': $mdTabsCtrl.lastSelectedIndex == null, ' +
@@ -1299,7 +1265,7 @@ function MdTabs ($$mdSvgRegistry) {
 }
 
 
-MdTabsDummyWrapper['$inject'] = ["$mdUtil", "$window"];angular
+MdTabsDummyWrapper.$inject = ["$mdUtil", "$window"];angular
   .module('material.components.tabs')
   .directive('mdTabsDummyWrapper', MdTabsDummyWrapper);
 
@@ -1356,7 +1322,7 @@ function MdTabsDummyWrapper ($mdUtil, $window) {
 }
 
 
-MdTabsTemplate['$inject'] = ["$compile", "$mdUtil"];angular
+MdTabsTemplate.$inject = ["$compile", "$mdUtil"];angular
     .module('material.components.tabs')
     .directive('mdTabsTemplate', MdTabsTemplate);
 

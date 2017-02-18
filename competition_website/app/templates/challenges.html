@@ -1,0 +1,121 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Purdue IEEE Computer Society HackTheStack2.0">
+  <meta name="keywords" content="C,C++,html,css,javascript,programming,natural language,artificial intelligence,voice programming,cyber-security,hacking">
+	<meta name="author" content="Purdue IEEE Computer Society">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <script src="../static/js/jquery-3.1.1.min.js"></script>
+  <link rel="stylesheet" href="../static/css/angular-material.min.css">
+  <script src="../static/node_modules/angular/angular.js"></script>
+	<script src="../static/node_modules/angular-aria/angular-aria.js"></script>
+	<script src="../static/node_modules/angular-animate/angular-animate.js"></script>
+	<script src="../static/node_modules/angular-material/angular-material.min.js"></script>
+	<script src="../static/node_modules/angular-messages/angular-messages.min.js"></script>
+  <link rel="stylesheet" href="../static/css/index.css">
+  <script src="../static/js/index.js"></script>
+  <title> IEEE Computer Society HackTheStack2.0 </title>
+</head>
+<body>
+  {%raw%}
+  <div ng-app="hackTStack" ng-cloak="" ng-controller="challengeCtrl">
+
+    <md-content class="headerNav">
+     <md-toolbar class="md-pimary md-hue-2" style="min-height:40px;height:40px;">
+       <div class="md-toolbar-tools">
+         <h2 class="headerLogo">
+           <a href="/"><span class="md-headline">HackTheStack2.0</span></a>
+         </h2>
+         <span flex=""></span>
+				 <span class="md-subhead"><a href="faq"><md-button class="md-accent navBut">FAQ</md-button></a></span>
+         <span class="md-subhead"><a href="logout"><md-button class="md-accent navBut">Logout</md-button></a></span>
+       </div>
+     </md-toolbar>
+   </md-content>
+
+   <md-tabs md-dynamic-height md-border-bottom>
+     <md-tab label="Buffer Overflows">
+       <md-card md-theme="{{ showDarkTheme ? 'dark-grey' : 'default' }}" md-theme-watch>
+         <md-card-content>
+           <h1 class="md-headline"> Buffer Overflows </h1>
+           <h1 class="md-subhead"> Each buffer overflow attack is located inside a directory named "overflowN" (where 'N' is the number of the attack). The directory contains one or more C source files as well as one or more binary files. For each attack, one of the source files contains a call to a function 'get_pwd'. You must exploit the binary(s) given to cause that function to run and output the password for that level. Enter that password in the fields below for every challenge. There are 5. </h1>
+         </md-card-content>
+       </md-card>
+
+       <div class="md-block" layout="row" layout-align="center center">
+         <div layout="row">
+           <div flex=70>
+            <md-input-container class="md-block" flex-gt-sm>
+               <label>Password 1</label>
+                 <input ng-model="boapass1">
+             </md-input-container>
+           </div>
+           <div flex=30>
+             <md-button ng-disabled="boa1submitflag" class="md-primary" ng-click="boa1passSubmit()">Submit</md-button>
+           </div>
+         </div>
+
+         <div layout="row">
+           <div flex=70>
+            <md-input-container class="md-block" flex-gt-sm>
+               <label>Password 2</label>
+                 <input ng-model="boapass2">
+             </md-input-container>
+           </div>
+           <div flex=30>
+             <md-button ng-disabled="boa2submitflag" class="md-primary" ng-click="boa1passSubmit()">Submit</md-button>
+           </div>
+         </div>
+       </div>
+
+       <div class="md-block" layout="row" layout-align="center center">
+         <div layout="row">
+           <div flex=70>
+            <md-input-container class="md-block" flex-gt-sm>
+               <label>Password 3</label>
+                 <input ng-model="boapass3">
+             </md-input-container>
+           </div>
+           <div flex=30>
+             <md-button ng-disabled="boa3submitflag" class="md-primary" ng-click="boa1passSubmit()">Submit</md-button>
+           </div>
+         </div>
+
+         <div layout="row">
+           <div flex=70>
+            <md-input-container class="md-block" flex-gt-sm>
+               <label>Password 4</label>
+                 <input ng-model="boapass4">
+             </md-input-container>
+           </div>
+           <div flex=30>
+             <md-button ng-disabled="boa4submitflag" class="md-primary" ng-click="boa1passSubmit()">Submit</md-button>
+           </div>
+         </div>
+
+         <div layout="row">
+           <div flex=70>
+            <md-input-container class="md-block" flex-gt-sm>
+               <label>Password 5</label>
+                 <input ng-model="boapass5">
+             </md-input-container>
+           </div>
+           <div flex=30>
+             <md-button ng-disabled="boa5submitflag" class="md-primary" ng-click="boa1passSubmit()">Submit</md-button>
+           </div>
+         </div>
+       </div>
+
+     </md-tab>
+     <md-tab label="Web Attacks">
+
+     </md-tab>
+     <md-tab label="Forensics">
+
+     </md-tab>
+   </md-tabs>
+
+ </div>
+ {%endraw%}
+</body>
+</html>

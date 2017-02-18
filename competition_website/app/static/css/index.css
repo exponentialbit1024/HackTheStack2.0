@@ -4,3 +4,8 @@
 .headerLogo{
   padding-left: 2%;
 }
+
+.navBut{
+  padding-left: 1%;
+  text-transform: capitalize;
+}

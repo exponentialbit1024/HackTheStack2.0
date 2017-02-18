@@ -2,7 +2,7 @@
  * Angular Material Design
  * https://github.com/angular/material
  * @license MIT
- * v1.1.3
+ * v1.1.1
  */
 (function( window, angular, undefined ){
 "use strict";
@@ -14,8 +14,8 @@
  *
  * Button
  */
-MdButtonDirective['$inject'] = ["$mdButtonInkRipple", "$mdTheming", "$mdAria", "$mdInteraction"];
-MdAnchorDirective['$inject'] = ["$mdTheming"];
+MdButtonDirective.$inject = ["$mdButtonInkRipple", "$mdTheming", "$mdAria", "$timeout"];
+MdAnchorDirective.$inject = ["$mdTheming"];
 angular
     .module('material.components.button', [ 'material.core' ])
     .directive('mdButton', MdButtonDirective)
@@ -125,7 +125,7 @@ function MdAnchorDirective($mdTheming) {
  *  </md-button>
  * </hljs>
  */
-function MdButtonDirective($mdButtonInkRipple, $mdTheming, $mdAria, $mdInteraction) {
+function MdButtonDirective($mdButtonInkRipple, $mdTheming, $mdAria, $timeout) {
 
   return {
     restrict: 'EA',
@@ -173,17 +173,20 @@ function MdButtonDirective($mdButtonInkRipple, $mdTheming, $mdAria, $mdInteracti
     });
 
     if (!element.hasClass('md-no-focus')) {
-
-      element.on('focus', function() {
-
-        // Only show the focus effect when being focused through keyboard interaction or programmatically
-        if (!$mdInteraction.isUserInvoked() || $mdInteraction.getLastInteractionType() === 'keyboard') {
+      // restrict focus styles to the keyboard
+      scope.mouseActive = false;
+      element.on('mousedown', function() {
+        scope.mouseActive = true;
+        $timeout(function(){
+          scope.mouseActive = false;
+        }, 100);
+      })
+      .on('focus', function() {
+        if (scope.mouseActive === false) {
           element.addClass('md-focused');
         }
-
-      });
-
-      element.on('blur', function() {
+      })
+      .on('blur', function(ev) {
         element.removeClass('md-focused');
       });
     }

@@ -2,7 +2,7 @@
  * Angular Material Design
  * https://github.com/angular/material
  * @license MIT
- * v1.1.3
+ * v1.1.1
  */
 goog.provide('ngmaterial.components.checkbox');
 goog.require('ngmaterial.core');
@@ -11,7 +11,7 @@ goog.require('ngmaterial.core');
  * @name material.components.checkbox
  * @description Checkbox module!
  */
-MdCheckboxDirective['$inject'] = ["inputDirective", "$mdAria", "$mdConstant", "$mdTheming", "$mdUtil", "$mdInteraction"];
+MdCheckboxDirective.$inject = ["inputDirective", "$mdAria", "$mdConstant", "$mdTheming", "$mdUtil", "$timeout"];
 angular
   .module('material.components.checkbox', ['material.core'])
   .directive('mdCheckbox', MdCheckboxDirective);
@@ -63,14 +63,14 @@ angular
  * </hljs>
  *
  */
-function MdCheckboxDirective(inputDirective, $mdAria, $mdConstant, $mdTheming, $mdUtil, $mdInteraction) {
+function MdCheckboxDirective(inputDirective, $mdAria, $mdConstant, $mdTheming, $mdUtil, $timeout) {
   inputDirective = inputDirective[0];
 
   return {
     restrict: 'E',
     transclude: true,
-    require: ['^?mdInputContainer', '?ngModel', '?^form'],
-    priority: $mdConstant.BEFORE_NG_ARIA,
+    require: '?ngModel',
+    priority: 210, // Run before ngAria
     template:
       '<div class="md-container" md-ink-ripple md-ink-ripple-checkbox>' +
         '<div class="md-icon"></div>' +
@@ -101,22 +101,9 @@ function MdCheckboxDirective(inputDirective, $mdAria, $mdConstant, $mdTheming, $
       post: postLink
     };
 
-    function postLink(scope, element, attr, ctrls) {
+    function postLink(scope, element, attr, ngModelCtrl) {
       var isIndeterminate;
-      var containerCtrl = ctrls[0];
-      var ngModelCtrl = ctrls[1] || $mdUtil.fakeNgModel();
-      var formCtrl = ctrls[2];
-
-      if (containerCtrl) {
-        var isErrorGetter = containerCtrl.isErrorGetter || function() {
-          return ngModelCtrl.$invalid && (ngModelCtrl.$touched || (formCtrl && formCtrl.$submitted));
-        };
-
-        containerCtrl.input = element;
-
-        scope.$watch(isErrorGetter, containerCtrl.setInvalid);
-      }
-
+      ngModelCtrl = ngModelCtrl || $mdUtil.fakeNgModel();
       $mdTheming(element);
 
       // Redirect focus events to the root element, because IE11 is always focusing the container element instead
@@ -152,10 +139,17 @@ function MdCheckboxDirective(inputDirective, $mdAria, $mdConstant, $mdTheming, $
         0: {}
       }, attr, [ngModelCtrl]);
 
+      scope.mouseActive = false;
       element.on('click', listener)
         .on('keypress', keypressHandler)
+        .on('mousedown', function() {
+          scope.mouseActive = true;
+          $timeout(function() {
+            scope.mouseActive = false;
+          }, 100);
+        })
         .on('focus', function() {
-          if ($mdInteraction.getLastInteractionType() === 'keyboard') {
+          if (scope.mouseActive === false) {
             element.addClass('md-focused');
           }
         })

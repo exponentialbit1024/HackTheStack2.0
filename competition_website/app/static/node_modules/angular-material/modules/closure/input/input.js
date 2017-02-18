@@ -2,7 +2,7 @@
  * Angular Material Design
  * https://github.com/angular/material
  * @license MIT
- * v1.1.3
+ * v1.1.1
  */
 goog.provide('ngmaterial.components.input');
 goog.require('ngmaterial.core');
@@ -10,16 +10,16 @@ goog.require('ngmaterial.core');
  * @ngdoc module
  * @name material.components.input
  */
-mdInputContainerDirective['$inject'] = ["$mdTheming", "$parse"];
-inputTextareaDirective['$inject'] = ["$mdUtil", "$window", "$mdAria", "$timeout", "$mdGesture"];
-mdMaxlengthDirective['$inject'] = ["$animate", "$mdUtil"];
-placeholderDirective['$inject'] = ["$compile"];
-ngMessageDirective['$inject'] = ["$mdUtil"];
-mdSelectOnFocusDirective['$inject'] = ["$timeout"];
-mdInputInvalidMessagesAnimation['$inject'] = ["$$AnimateRunner", "$animateCss", "$mdUtil", "$log"];
-ngMessagesAnimation['$inject'] = ["$$AnimateRunner", "$animateCss", "$mdUtil", "$log"];
-ngMessageAnimation['$inject'] = ["$$AnimateRunner", "$animateCss", "$mdUtil", "$log"];
-var inputModule = angular.module('material.components.input', [
+mdInputContainerDirective.$inject = ["$mdTheming", "$parse"];
+inputTextareaDirective.$inject = ["$mdUtil", "$window", "$mdAria", "$timeout", "$mdGesture"];
+mdMaxlengthDirective.$inject = ["$animate", "$mdUtil"];
+placeholderDirective.$inject = ["$compile"];
+ngMessageDirective.$inject = ["$mdUtil"];
+mdSelectOnFocusDirective.$inject = ["$timeout"];
+mdInputInvalidMessagesAnimation.$inject = ["$$AnimateRunner", "$animateCss", "$mdUtil"];
+ngMessagesAnimation.$inject = ["$$AnimateRunner", "$animateCss", "$mdUtil"];
+ngMessageAnimation.$inject = ["$$AnimateRunner", "$animateCss", "$mdUtil"];
+angular.module('material.components.input', [
     'material.core'
   ])
   .directive('mdInputContainer', mdInputContainerDirective)
@@ -35,26 +35,12 @@ var inputModule = angular.module('material.components.input', [
 
   .animation('.md-input-invalid', mdInputInvalidMessagesAnimation)
   .animation('.md-input-messages-animation', ngMessagesAnimation)
-  .animation('.md-input-message-animation', ngMessageAnimation);
-
-// If we are running inside of tests; expose some extra services so that we can test them
-if (window._mdMocksIncluded) {
-  inputModule.service('$$mdInput', function() {
-    return {
-      // special accessor to internals... useful for testing
-      messages: {
-        show        : showInputMessages,
-        hide        : hideInputMessages,
-        getElement  : getMessagesElement
-      }
-    }
-  })
+  .animation('.md-input-message-animation', ngMessageAnimation)
 
   // Register a service for each animation so that we can easily inject them into unit tests
   .service('mdInputInvalidAnimation', mdInputInvalidMessagesAnimation)
   .service('mdInputMessagesAnimation', ngMessagesAnimation)
   .service('mdInputMessageAnimation', ngMessageAnimation);
-}
 
 /**
  * @ngdoc directive
@@ -109,7 +95,7 @@ if (window._mdMocksIncluded) {
  */
 function mdInputContainerDirective($mdTheming, $parse) {
 
-  ContainerCtrl['$inject'] = ["$scope", "$element", "$attrs", "$animate"];
+  ContainerCtrl.$inject = ["$scope", "$element", "$attrs", "$animate"];
   var INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT', 'MD-SELECT'];
 
   var LEFT_SELECTORS = INPUT_TAGS.reduce(function(selectors, isel) {
@@ -604,8 +590,7 @@ function inputTextareaDirective($mdUtil, $window, $mdAria, $timeout, $mdGesture)
 
         function onDrag(ev) {
           if (!isDragging) return;
-
-          element.css('height', (startHeight + ev.pointer.distanceY) + 'px');
+          element.css('height', startHeight + (ev.pointer.y - dragStart) - $mdUtil.scrollTop() + 'px');
         }
 
         function onDragEnd(ev) {
@@ -669,6 +654,12 @@ function mdMaxlengthDirective($animate, $mdUtil) {
       // over the maxlength still counts as invalid.
       attr.$set('ngTrim', 'false');
 
+      ngModelCtrl.$formatters.push(renderCharCount);
+      ngModelCtrl.$viewChangeListeners.push(renderCharCount);
+      element.on('input keydown keyup', function() {
+        renderCharCount(); //make sure it's called with no args
+      });
+
       scope.$watch(attr.mdMaxlength, function(value) {
         maxlength = value;
         if (angular.isNumber(value) && value > 0) {
@@ -685,11 +676,6 @@ function mdMaxlengthDirective($animate, $mdUtil) {
         if (!angular.isNumber(maxlength) || maxlength < 0) {
           return true;
         }
-
-        // We always update the char count, when the modelValue has changed.
-        // Using the $validators for triggering the update works very well.
-        renderCharCount();
-
         return ( modelValue || element.val() || viewValue || '' ).length <= maxlength;
       };
     });
@@ -922,10 +908,10 @@ function ngMessageDirective($mdUtil) {
   }
 }
 
-var $$AnimateRunner, $animateCss, $mdUtil, $log;
+var $$AnimateRunner, $animateCss, $mdUtil;
 
-function mdInputInvalidMessagesAnimation($$AnimateRunner, $animateCss, $mdUtil, $log) {
-  saveSharedServices($$AnimateRunner, $animateCss, $mdUtil, $log);
+function mdInputInvalidMessagesAnimation($$AnimateRunner, $animateCss, $mdUtil) {
+  saveSharedServices($$AnimateRunner, $animateCss, $mdUtil);
 
   return {
     addClass: function(element, className, done) {
@@ -936,8 +922,8 @@ function mdInputInvalidMessagesAnimation($$AnimateRunner, $animateCss, $mdUtil, 
   };
 }
 
-function ngMessagesAnimation($$AnimateRunner, $animateCss, $mdUtil, $log) {
-  saveSharedServices($$AnimateRunner, $animateCss, $mdUtil, $log);
+function ngMessagesAnimation($$AnimateRunner, $animateCss, $mdUtil) {
+  saveSharedServices($$AnimateRunner, $animateCss, $mdUtil);
 
   return {
     enter: function(element, done) {
@@ -963,11 +949,11 @@ function ngMessagesAnimation($$AnimateRunner, $animateCss, $mdUtil, $log) {
         done();
       }
     }
-  };
+  }
 }
 
-function ngMessageAnimation($$AnimateRunner, $animateCss, $mdUtil, $log) {
-  saveSharedServices($$AnimateRunner, $animateCss, $mdUtil, $log);
+function ngMessageAnimation($$AnimateRunner, $animateCss, $mdUtil) {
+  saveSharedServices($$AnimateRunner, $animateCss, $mdUtil);
 
   return {
     enter: function(element, done) {
@@ -981,21 +967,14 @@ function ngMessageAnimation($$AnimateRunner, $animateCss, $mdUtil, $log) {
 
       animator.start().done(done);
     }
-  };
+  }
 }
 
 function showInputMessages(element, done) {
   var animators = [], animator;
   var messages = getMessagesElement(element);
-  var children = messages.children();
 
-  if (messages.length == 0 || children.length == 0) {
-    $log.warn('mdInput messages show animation called on invalid messages element: ', element);
-    done();
-    return;
-  }
-
-  angular.forEach(children, function(child) {
+  angular.forEach(messages.children(), function(child) {
     animator = showMessage(angular.element(child));
 
     animators.push(animator.start());
@@ -1007,15 +986,8 @@ function showInputMessages(element, done) {
 function hideInputMessages(element, done) {
   var animators = [], animator;
   var messages = getMessagesElement(element);
-  var children = messages.children();
 
-  if (messages.length == 0 || children.length == 0) {
-    $log.warn('mdInput messages hide animation called on invalid messages element: ', element);
-    done();
-    return;
-  }
-
-  angular.forEach(children, function(child) {
+  angular.forEach(messages.children(), function(child) {
     animator = hideMessage(angular.element(child));
 
     animators.push(animator.start());
@@ -1053,7 +1025,7 @@ function hideMessage(element) {
   var styles = window.getComputedStyle(element[0]);
 
   // If we are already hidden, just return an empty animation
-  if (parseInt(styles.opacity) === 0) {
+  if (styles.opacity == 0) {
     return $animateCss(element, {});
   }
 
@@ -1074,11 +1046,6 @@ function getInputElement(element) {
 }
 
 function getMessagesElement(element) {
-  // If we ARE the messages element, just return ourself
-  if (element.hasClass('md-input-messages-animation')) {
-    return element;
-  }
-
   // If we are a ng-message element, we need to traverse up the DOM tree
   if (element.hasClass('md-input-message-animation')) {
     return angular.element($mdUtil.getClosest(element, function(node) {
@@ -1090,11 +1057,10 @@ function getMessagesElement(element) {
   return angular.element(element[0].querySelector('.md-input-messages-animation'));
 }
 
-function saveSharedServices(_$$AnimateRunner_, _$animateCss_, _$mdUtil_, _$log_) {
+function saveSharedServices(_$$AnimateRunner_, _$animateCss_, _$mdUtil_) {
   $$AnimateRunner = _$$AnimateRunner_;
   $animateCss = _$animateCss_;
   $mdUtil = _$mdUtil_;
-  $log = _$log_;
 }
 
 ngmaterial.components.input = angular.module("material.components.input");

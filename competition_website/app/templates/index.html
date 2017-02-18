@@ -18,7 +18,7 @@
 </head>
 <body>
   {%raw%}
-  <div ng-app="hackTStack" ng-cloak="" ng-controller="challengCtrl">
+  <div ng-app="hackTStack" ng-cloak="" ng-controller="indexCtrl">
 
     <md-content class="headerNav">
      <md-toolbar class="md-pimary md-hue-2" style="min-height:40px;height:40px;">
@@ -26,6 +26,8 @@
          <h2 class="headerLogo">
            <a href="/"><span class="md-headline">HackTheStack2.0</span></a>
          </h2>
+         <span flex=""></span>
+				 <span class="md-subhead"><a href="faq"><md-button class="md-accent navBut">FAQ</md-button></a></span>
        </div>
      </md-toolbar>
    </md-content>
@@ -40,11 +42,11 @@
        <md-card-content>
          <h1 class="md-subhead"> Please enter your Purdue userID to start keeping track of your score and get access to the challenges. </h1>
          <md-input-container class="md-block" flex-gt-sm>
-            <label>Purdue UserID</label>
-            <input ng-model="user.firstName">
+            <label>Your signed up ID</label>
+              <input ng-model="pid.logID">
           </md-input-container>
           <md-card-actions layout="row" layout-align="end center">
-            <md-button class="md-raised md-primary">Go</md-button>
+            <md-button class="md-raised md-primary" ng-click="submitLID()">Go</md-button>
           </md-card-actions>
        </md-card-content>
      </md-card>
