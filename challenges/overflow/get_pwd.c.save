@@ -1,0 +1,43 @@
+
+#define PWDS 1
+
+#include<string.h>
+#include<stdio.h>
+
+union {
+	short encoded[8];
+	char decoded[16];
+} decoder;
+
+
+struct {
+	const char* key;
+	short password[9];
+} passwords[PWDS] = {"test", {14130, 12593, 1030, -2056, -25600, -97, 0, 0}};
+
+char* decode(short* encoded)
+{
+	short shifted[8];
+	short old = encoded[0];
+	for (int i = 0; i < 8; i++)
+	{
+		shifted[i++] = old + encoded[i];
+		old = encoded[i];
+	}
+	memcpy(decoder.encoded, shifted, 8);
+	for (int i = 0; i < 8; i++)
+		printf("%d\n", decoder.encoded[i]);
+	return decoder.decoded;
+}
+
+char* get_pwd(const char* key)
+{
+	for (int i = 0; i < PWDS; i++)
+	{
+		printf("checking #%d\n", i); fflush(stdout);
+		printf("comparing to key %s", key); fflush(stdout);
+		printf("current key is %s", passwords[i].key); fflush(stdout);
+		if (!strcmp(key, passwords[i].key))
+			return decode(passwords[i].password);
+	}
+}

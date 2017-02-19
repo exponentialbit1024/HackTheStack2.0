@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "if(!strcmp(key, \"$1\"))" >> get_pwd.c
+$pwd = ${./keygen 8}
+echo "return \"$pwd\""; >> get_pwd.c
